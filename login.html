@@ -14,11 +14,11 @@ Diese E-Mail besitzt bereits ein Konto.
 
 {% if check%}
 <br>
-Die E-Mail ist noch nicht registriert oder das Passwort ist falsch.
+Das Passwort ist falsch.
 </br>
 {%endif%}
 
-<form action="/login" method = "POST">
+<form action="/login" method = 'POST'>
     Bitte E-Mail eingeben:
     <br>
     <input type="text" name="email">

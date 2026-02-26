@@ -1,70 +1,84 @@
 from flask import Flask, render_template, request
 import sqlite3
+import bcrypt               #zum verschlüsseln/ hashen der Passwörter
+
 
 app = Flask(__name__)
 
-con = sqlite3.connect("Passwörter.db", check_same_thread = False)
-cur = con.cursor()
+con = sqlite3.connect("Passwörter.db", check_same_thread = False)   #connected zur Datenbank
+cur = con.cursor()                                                  #ermöglicht Interaktion mit DB
 
+#Startseite, auswählen zwischen registrieren und Login
 @app.route("/")
 def start():
      return render_template("start.html")
 
+#Registrierung mit Umleitung zu main oder login (Email schon vorhanden)
 @app.route("/registrierung", methods = ["GET", "POST"])
 def registrierung():
-
+    
     if request.method == "POST":
-        email = request.form["EMail"]
-
+        #wählt EMails aus, welche mit der eingegebenen identisch sind
+        email = request.form["email"]
         cur.execute('''
-            SELECT EXISTS(
-            SELECT 1 FROM Passwörter
-            WHERE EMail = ?)
+            SELECT Passwort, Username FROM Passwörter
+            WHERE EMail = ? 
             ''', [email,])
-        exists = cur.fetchone()[0]
-
-        if exists == 1:
-            print("Ihre E-Mail existiert bereits")
+        row = cur.fetchone()
+        #falls es schon eine EMail mit dem eingegebenen Namen gibt 
+        #wird man zum Login geleitet mit der Hinweis, das sie schon existiert
+        if row is not None: 
             return render_template("login.html", exists = True)
         else:
             username = request.form["username"]
             password = request.form["password"]
-            
+            #bscrypt braucht eine folge an Bytes um diese zu verschlüssln
+            password_bytes = password.encode('utf-8')
+            #generiert random Salt(Schlüssel) fürn hash
+            hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt())  
+
             cur.execute('''
-                INSERT INTO Passwörter (username, passwort, EMail)
+                INSERT INTO Passwörter (Username, Passwort, EMail)
                 VALUES (?, ?, ?)
-                ''', [username, password, email])
+                ''', [username, hash, email])
             con.commit()
-            return render_template("main.html", username = username)
+            return render_template("main.html")
     return render_template("registrierung.html")
 
+#Login mit Umleitung zu main oder Registrierung (falls email nicht vorhanden) 
+#oder Login (Passwort falsch)
 @app.route("/login", methods = ['GET', 'POST'])
 def login():  
+    
     if request.method == 'POST': 
         email = request.form["email"]
         password = request.form["password"]
+        password_bytes = password.encode('utf-8')
 
+        #gebe EMails mit 
         cur.execute('''
-            SELECT EXISTS(SELECT 1 FROM Passwörter
-            WHERE EMail = ? and Passwort = ?)
-            ''', [email, password])
-        check = cur.fetchone()[0]
+            SELECT Passwort, Username FROM Passwörter
+            WHERE EMail = ? 
+            ''', [email,])
+        row = cur.fetchone()
 
-        cur.execute('''
-            SELECT Username FROM Passwörter
-            WHERE EMail = ?
-        ''', [email,])
-        username = cur.fetchone()[0]
+        #falls email nicht existiert gehe zur Registrierung und gebe das an
+        if row is None: 
+            return render_template("registrierung.html", exists = False)
         
-        if check == 1:
-            return render_template("main.html", username = username)
-        else: 
-            return render_template("login.html", check = False)
+        stored_hash = row[0]
+        username = row[1]
+        
+        #überprüft ob das passwort mit dem gespeicherten Passwort übereinstimmt
+        if bcrypt.checkpw(password_bytes, stored_hash):
+            return render_template("main.html")
+        else:
+            return render_template("login.html", check = True)
     return render_template("login.html")
 
 @app.route("/main", methods = ['GET', 'POST'])
 def main(username): 
-    return render_template("main.html", username = username)
+    return render_template("main.html")
 
 if __name__ == "__main__":
     app.run(debug = True)

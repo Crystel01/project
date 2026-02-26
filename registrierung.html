@@ -5,6 +5,12 @@
     <title>Registrierung</title>
 </head>
 
+{% if not exists%}
+<br>
+Diese E-Mail besitzt noch kein Konto.
+</br>
+{%endif%}
+
 <form action="/registrierung" method="POST">
     Bitte Nutzernamen eingeben:
     <br>
@@ -16,8 +22,8 @@
     </br>
     Bitte E-Mail eingeben:
     <br>
-    <input type="text" name="EMail">
+    <input type="text" name="email">
     </br>
-    <button type="submit">Login</button>
+    <button type="submit">Registrieren</button>
 </form>
 </html>
