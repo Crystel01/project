@@ -5,11 +5,19 @@
 </head>
 <body>
 <h1>My Chat - Login</h1>
+
 {% if exists%}
 <br>
 Diese E-Mail besitzt bereits ein Konto.
 </br>
 {%endif%}
+
+{% if check%}
+<br>
+Die E-Mail ist noch nicht registriert oder das Passwort ist falsch.
+</br>
+{%endif%}
+
 <form action="/login" method = "POST">
     Bitte E-Mail eingeben:
     <br>

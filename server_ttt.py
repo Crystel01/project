@@ -28,26 +28,43 @@ def registrierung():
             return render_template("login.html", exists = True)
         else:
             username = request.form["username"]
-            passwort = request.form["password"]
+            password = request.form["password"]
             
             cur.execute('''
                 INSERT INTO Passwörter (username, passwort, EMail)
                 VALUES (?, ?, ?)
-                ''', [username, passwort, email])
+                ''', [username, password, email])
             con.commit()
-            return f"Hallo {username}"
+            return render_template("main.html", username = username)
     return render_template("registrierung.html")
 
 @app.route("/login", methods = ['GET', 'POST'])
 def login():  
     if request.method == 'POST': 
-        
+        email = request.form["email"]
+        password = request.form["password"]
 
+        cur.execute('''
+            SELECT EXISTS(SELECT 1 FROM Passwörter
+            WHERE EMail = ? and Passwort = ?)
+            ''', [email, password])
+        check = cur.fetchone()[0]
+
+        cur.execute('''
+            SELECT Username FROM Passwörter
+            WHERE EMail = ?
+        ''', [email,])
+        username = cur.fetchone()[0]
+        
+        if check == 1:
+            return render_template("main.html", username = username)
+        else: 
+            return render_template("login.html", check = False)
     return render_template("login.html")
 
 @app.route("/main", methods = ['GET', 'POST'])
-def main(): 
-    return
+def main(username): 
+    return render_template("main.html", username = username)
 
 if __name__ == "__main__":
     app.run(debug = True)
