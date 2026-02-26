@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="de-x-formal" dir="ltr" class="client-nojs">
+<head>
+    <title>Login</title>
+</head>
+<body>
+<h1>My Chat - Login</h1>
+{% if exists%}
+<br>
+Diese E-Mail besitzt bereits ein Konto.
+</br>
+{%endif%}
+<form action="/login" method = "POST">
+    Bitte E-Mail eingeben:
+    <br>
+    <input type="text" name="email">
+    </br>
+    Bitte Passwort eingeben:
+    <br>
+    <input type="password" name="password">
+    </br>
+    <button type="submit">Login</button>
+</form>
+
+</body>
