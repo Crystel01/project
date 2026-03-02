@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    
+    <style>
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('https://camper.help/wp-content/uploads/Tic-Tac-Toe-Spielzuege-deutlich-komplexer-scaled.jpeg'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(8px); 
+            z-index: -1; 
+            transform: scale(1.05); 
+        }
+
+        body {
+            font-family: "Space Grotesk", sans-serif;
+            color: white;
+            text-align: center;
+            padding-top: 50px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 3rem;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            margin-bottom: 50px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 380px;
+            height: 3px;
+            background-color: #e98f4a;
+            border-radius: 2px;
+        }
+
+
+        #spiel-container {
+            display: block;
+            width: fit-content;  
+            margin: 0 auto;
+            
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #status-text {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #bde0f3;
+        }
+
+        #spielfeld {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+            margin: 0 auto;
+        }
+
+        #spielfeld button {
+            width: 100px;
+            height: 100px;
+            font-size: 40px;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #spielfeld button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        #neustart-knopf, #zurück-knopf {
+            display: inline-block;
+            margin-top: 30px;
+            margin-left: 10px;
+            margin-right: 10px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #neustart-knopf:hover {
+            border-color: #e98f4a;
+            color: #e98f4a;
+        }
+        
+        #zurück-knopf:hover {
+            border-color: #bde0f3;
+            color: #bde0f3;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tic Tac Toe</h1>
+
+    <div id="spiel-container">
+        <div id="status-text">Du bist dran (X)</div>
+
+        <div id="spielfeld">
+            <button id="feld-0" onclick="macheZug(0)"></button>
+            <button id="feld-1" onclick="macheZug(1)"></button>
+            <button id="feld-2" onclick="macheZug(2)"></button>
+            <button id="feld-3" onclick="macheZug(3)"></button>
+            <button id="feld-4" onclick="macheZug(4)"></button>
+            <button id="feld-5" onclick="macheZug(5)"></button>
+            <button id="feld-6" onclick="macheZug(6)"></button>
+            <button id="feld-7" onclick="macheZug(7)"></button>
+            <button id="feld-8" onclick="macheZug(8)"></button>
+        </div>
+
+        <button id="neustart-knopf" onclick="neustart()">Neustart</button>
+        
+        <a id="zurueck-knopf" href="http://127.0.0.1:5000/login">Zum Menü</a> 
+    </div>
+
+    <script src="/static/tictactoe.js"></script>
+
+</body>
+</html>

@@ -24,7 +24,7 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: "Space Grotesk", sans-serif;
             padding-top: 80px; 
             text-align: center;
         }
@@ -52,9 +52,7 @@
             height: 150%; 
             background-color: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
             z-index: -1; 
             pointer-events: none; 
         }
@@ -111,33 +109,29 @@
             display: block;
         }
 
-        .klick-box {
-            display: inline-block;
-            padding: 20px 40px;
+        h1 {
             color: #ffffff;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            margin: 10px;
+            font-size: 3rem;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            margin-top: 40px;
+            margin-bottom: 50px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            position: relative;
+            display: inline-block;
         }
 
-        .box-blau { background-color: #007bff; }
-        .box-blau:hover { background-color: #0060c7; }
-
-        .box-orange { background-color: #ff8400; }
-        .box-orange:hover { background-color: #e64500; }
-
-        .box-gruen { background-color: #34c200; }
-        .box-gruen:hover { background-color: #00851d; }
-
-        .box-lila { background-color: #ce00d2; }
-        .box-lila:hover { background-color: #81007f; }
-        
-        h1 {
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 550px;
+            height: 3px;
+            background-color: #ff8400;
+            border-radius: 2px;
         }
 
         .bg-layer {
@@ -166,6 +160,78 @@
         body:has(.box-gruen:hover) .bg-gruen { opacity: 1; }
         body:has(.box-lila:hover) .bg-lila { opacity: 1; }
 
+  
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 50px 30px; 
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .game-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .klick-box {
+            display: inline-block;
+            padding: 20px 40px;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            width: 200px; 
+
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            box-sizing: border-box;
+            
+            transition: all 0.3s ease; 
+        }
+
+        .klick-box:hover {
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .box-blau { background-color: #bde0f3; }
+        .box-blau:hover { background-color: #84b2ca; }
+
+        .box-orange { background-color: #e98f4a; }
+        .box-orange:hover { background-color: #af652c; }
+
+        .box-gruen { background-color: #b9d674; }
+        .box-gruen:hover { background-color: #8faa50; }
+
+        .box-lila { background-color: #e15f51; }
+        .box-lila:hover { background-color: #b84336; }
+
+
+
+        .game-desc {
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 15px;
+            max-width: 200px;
+            line-height: 1.5;
+            
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            padding: 15px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-sizing: border-box; 
+
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .text-blau { color: #bde0f3; }
+        .text-orange { color: #e98f4a; }
+        .text-gruen { color: #b9d674; }
+        .text-lila { color: #e15f51; }
+
     </style>
 </head>
 
@@ -190,34 +256,40 @@
         <div class="dropdown dropdown-right">
             <a href="#" class="dropbtn" onclick="toggleDropdown(event, 'settings-links')">Settings ⚙</a>
             <div id="settings-links" class="dropdown-content">
-                <a href="#">Konto</a>
-                <a href="#">Audio</a>
+                <a href="#">Account</a>
                 <a href="#">Graphic</a>
+                <a href="#">Audio</a>
             </div>
         </div>
     </nav>
 
-    <h1>Please choose a game:</h1>
+    <h1>Choose a game:</h1>
 
-    <a href="https://www.google.de" target="_blank" class="klick-box box-blau">
-        Chess
-    </a>
+    <div class="game-grid">
+        
+        <div class="game-card">
+            <a href="https://www.google.de" target="_blank" class="klick-box box-blau" title="Click here to play">Chess</a>
+            <div class="game-desc text-blau">Der absolute Klassiker für Strategen. Setze den gegnerischen König schachmatt.</div>
+        </div>
 
-    <a href="https://www.google.de" target="_blank" class="klick-box box-orange">
-        Tic Tac Toe
-    </a>
+        <div class="game-card">
+        <a href="http://127.0.0.1:5000/tictactoe" class="klick-box box-orange" title="Click here to play">Tic Tac Toe</a>            
+        <div class="game-desc text-orange">Drei in einer Reihe gewinnen! Ein schnelles Spiel für zwischendurch.</div>
+        </div>
 
-    <br>
+        <div class="game-card">
+            <a href="https://www.google.de" target="_blank" class="klick-box box-gruen" title="Click here to play">Poker</a>
+            <div class="game-desc text-gruen">Zeige dein bestes Pokerface und gewinne mit den stärksten Karten.</div>
+        </div>
 
-    <a href="https://www.google.de" target="_blank" class="klick-box box-gruen">
-        Poker
-    </a>
+        <div class="game-card">
+            <a href="https://www.google.de" target="_blank" class="klick-box box-lila" title="Click here to play">Game 4</a>
+            <div class="game-desc text-lila">Ein brandneues Abenteuer wartet auf dich. Entdecke spannende Level.</div>
+        </div>
 
-    <a href="https://www.google.de" target="_blank" class="klick-box box-lila">
-        Game 4
-    </a>
+    </div>
 
-    <p style="margin-top: 800px; color: white; font-weight: bold;">Hello</p>
+    <p style="margin-top: 400px; color: white; font-weight: bold;">Hello</p>
 
     <script>
         function toggleDropdown(event, menuId) {
@@ -244,5 +316,8 @@
             }
         }
     </script>
+
+    <script src="tictactoe.js"></script>
+
 </body>
 </html>
