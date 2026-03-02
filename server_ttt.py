@@ -55,7 +55,6 @@ def login():
         password = request.form["password"]
         password_bytes = password.encode('utf-8')
 
-        #gebe EMails mit 
         cur.execute('''
             SELECT Passwort, Username FROM Passwörter
             WHERE EMail = ? 

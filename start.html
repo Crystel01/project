@@ -2,23 +2,42 @@
 <html lang="de-x-formal" dir="ltr" class="client-nojs">
 
 <head>
-    <title>Startseite</title>
+    <title>PixelPenguin</title>
+
+    <style>
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url(https://wallpapercave.com/wp/wp3748776.jpg);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            filter: blur(6px);
+            z-index: -1;
+            transform: scale(1.05); 
+        }
+
+
+    </style>
 </head>
 
 <body>
 
-<h1>
-    Start
+<h1 style="text-align:center; font-family: 'Courier New', Courier, monospace; color: white;" >
+    Welcome to PixelPengiun
 </h1>
 
 <form action="/login">
-    <button type="submit">Hier zum Login</button>
+    <button type="submit">Login</button>
 </form> 
 
 <br>
 <form action="/registrierung">
-    <button type="submit">Hier zur Registrierung</button>
-</form> 
+    <button type="submit">Registrer</button>
 </br>
 
 </body>
