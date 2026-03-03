@@ -125,11 +125,45 @@
             border-color: #bde0f3;
             color: #bde0f3;
         }
+
+        .difficulty a.dropbtn {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block; 
+            text-align: left;
+        }
+
     </style>
 </head>
 <body>
 
     <h1>Tic Tac Toe</h1>
+
+    <nav class = "difficulty">
+        <a class = "dropdown">
+            <a href = "#" class = "dropbtn"  onclick="toggleDropdown(event, 'difficulty-options')">Please select difficulty</a>
+            <div id="difficulty-options", class="dropdown-content">
+                <a href="tictactoe/easy">Easy</a>
+                <a href="tictactoe/medium">Medium</a>
+                <a href="tictactoe/hard">Hard</a>
+            </div>
+        </a>
+
+    </nav>
 
     <div id="spiel-container">
         <div id="status-text">Du bist dran (X)</div>
@@ -148,7 +182,7 @@
 
         <button id="neustart-knopf" onclick="neustart()">Neustart</button>
         
-        <a id="zurueck-knopf" href="http://127.0.0.1:5000/login">Zum Menü</a> 
+        <a id="zurück-knopf" href="http://127.0.0.1:5000/main">Zum Menü</a> 
     </div>
 
     <script src="/static/tictactoe.js"></script>
