@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request
+from datetime import date
 import sqlite3
 import bcrypt               #zum verschlüsseln/ hashen der Passwörter
 
 
 app = Flask(__name__)
 
-con = sqlite3.connect("Passwörter.db", check_same_thread = False)   #connected zur Datenbank
+con = sqlite3.connect("DBPixelPenguin.db", check_same_thread = False)   #connected zur Datenbank
 cur = con.cursor()                                                  #ermöglicht Interaktion mit DB
 
 #Startseite, auswählen zwischen registrieren und Login
@@ -21,7 +22,7 @@ def registrierung():
         #wählt EMails aus, welche mit der eingegebenen identisch sind
         email = request.form["email"]
         cur.execute('''
-            SELECT Passwort, Username FROM Passwörter
+            SELECT Passwort, Username FROM User
             WHERE EMail = ? 
             ''', [email,])
         row = cur.fetchone()
@@ -32,15 +33,16 @@ def registrierung():
         else:
             username = request.form["username"]
             password = request.form["password"]
-            #bscrypt braucht eine folge an Bytes um diese zu verschlüssln
+            #bscrypt braucht eine Folge an Bytes um diese zu verschlüssln
             password_bytes = password.encode('utf-8')
             #generiert random Salt(Schlüssel) fürn hash
             hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt())  
+            cur_date = date.today()
 
             cur.execute('''
-                INSERT INTO Passwörter (Username, Passwort, EMail)
-                VALUES (?, ?, ?)
-                ''', [username, hash, email])
+                INSERT INTO User (Username, Passwort, EMail, created_at)
+                VALUES (?, ?, ?, ?)
+                ''', [username, hash, email, cur_date])
             con.commit()
             return render_template("main.html")
     return render_template("registrierung.html")
@@ -56,7 +58,7 @@ def login():
         password_bytes = password.encode('utf-8')
 
         cur.execute('''
-            SELECT Passwort, Username FROM Passwörter
+            SELECT Passwort, Username FROM User
             WHERE EMail = ? 
             ''', [email,])
         row = cur.fetchone()
@@ -76,8 +78,14 @@ def login():
     return render_template("login.html")
 
 @app.route("/main", methods = ['GET', 'POST'])
-def main(username): 
+def main(): 
     return render_template("main.html")
+
+
+
+@app.route("/tictactoe")
+def ttt():
+    return render_template("tictactoe.html")
 
 if __name__ == "__main__":
     app.run(debug = True)
