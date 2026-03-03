@@ -2,11 +2,15 @@ from flask import Flask, render_template, request
 from datetime import date
 import sqlite3
 import bcrypt               #zum verschlüsseln/ hashen der Passwörter
-
+import os
 
 app = Flask(__name__)
 
-con = sqlite3.connect("DBPixelPenguin.db", check_same_thread = False)   #connected zur Datenbank
+#nötig, damit nicht auf den aktuellen Arbeistspeicher zugegriffeen werden muss
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))   #guckt wo die Py Datei liegt, definiert als absoluten Pfad und gibt den den Ornder an
+db_path = os.path.join(BASE_DIR, "DBPixelPenguin.db")   #verbindet Ordner und DB in Abhängigkeit vom OS 
+
+con = sqlite3.connect(db_path, check_same_thread=False)   #connected zur Datenbank
 cur = con.cursor()                                                  #ermöglicht Interaktion mit DB
 
 #Startseite, auswählen zwischen registrieren und Login
