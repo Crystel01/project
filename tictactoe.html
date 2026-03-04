@@ -36,8 +36,7 @@
             font-weight: 300;
             text-transform: uppercase;
             letter-spacing: 10px;
-            margin-bottom: 50px;
-            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            margin-bottom: 25px;
             position: relative;
             display: inline-block;
         }
@@ -49,8 +48,9 @@
             left: 50%;
             transform: translateX(-50%);
             width: 380px;
+            max-width: 90%;
             height: 3px;
-            background-color: #e98f4a;
+            background-color: #ff8400;
             border-radius: 2px;
         }
 
@@ -71,7 +71,7 @@
             font-size: 24px;
             margin-bottom: 20px;
             font-weight: bold;
-            color: #bde0f3;
+            color: #007bff;
         }
 
         #spielfeld {
@@ -140,11 +140,32 @@
         }
 
         .dropdown-content {
+            display: none;
+            position: absolute; 
+            background-color: rgba(0, 0, 0, 0.9);
+            min-width: 160px;
+            border-radius: 8px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+            z-index: 10;
+            margin-top: 10px;
+        }
+
+        .dropdown-content a {
             color: white;
             padding: 12px 16px;
             text-decoration: none;
-            display: block; 
+            display: block;
             text-align: left;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #e98f4a;
+            border-radius: 8px;
+        }
+
+        .show {
+            display: block;
         }
 
     </style>
@@ -153,17 +174,21 @@
 
     <h1>Tic Tac Toe</h1>
 
-    <nav class = "difficulty">
-        <a class = "dropdown">
-            <a href = "#" class = "dropbtn"  onclick="toggleDropdown(event, 'difficulty-options')">Please select difficulty</a>
-            <div id="difficulty-options", class="dropdown-content">
-                <a href="tictactoe/easy">Easy</a>
-                <a href="tictactoe/medium">Medium</a>
-                <a href="tictactoe/hard">Hard</a>
-            </div>
-        </a>
+    <br>
+    <br>
 
+    <nav class="difficulty">
+        <div class="dropdown">
+            <a href="#" class="dropbtn" onclick="toggleDropdown(event, 'difficulty-options')">Difficulty: easy</a>
+            <div id="difficulty-options" class="dropdown-content">
+                <a href="#" onclick="difficulty('easy'); return false;">Easy</a>
+                <a href="#" onclick="difficulty('medium'); return false;">Medium</a>
+                <a href="#" onclick="difficulty('hard'); return false;">Hard</a>
+            </div>
+        </div>
     </nav>
+
+    <br>
 
     <div id="spiel-container">
         <div id="status-text">Du bist dran (X)</div>
@@ -181,11 +206,34 @@
         </div>
 
         <button id="neustart-knopf" onclick="neustart()">Neustart</button>
-        
-        <a id="zurück-knopf" href="http://127.0.0.1:5000/main">Zum Menü</a> 
+
+        <a id="zurück-knopf" href="/main">Zum Menü</a> 
     </div>
 
     <script src="/static/tictactoe.js"></script>
 
+    <script>
+        function toggleDropdown(event, menuId) {
+            event.preventDefault(); 
+            document.getElementById(menuId).classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                let dropdowns = document.querySelectorAll('.dropdown-content');
+                dropdowns.forEach(menu => {
+                    if (menu.classList.contains('show')) {
+                        menu.classList.remove('show');
+                    }
+                });
+            }
+        }
+    </script>
+
+    <form id="history-form" method="POST" action="#">
+        <input type="hidden" id="history" name="history" value="">
+    </form>
+
 </body>
+
 </html>

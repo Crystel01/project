@@ -2,6 +2,8 @@
 let brett = ['', '', '', '', '', '', '', '', ''];
 let spielAktiv = true;
 let spielerDran = true;
+let difficultyNow = 'easy';
+let history_list = [];
 
 // Gewinnoptionen
 const gewinnKombinationen = [
@@ -10,13 +12,25 @@ const gewinnKombinationen = [
     [0, 4, 8], [2, 4, 6]             // Diagonal
 ];
 
-// Felder
+// Schwierigkeitsgrad
+function difficulty(level) {
+    difficultyNow = level;
+    
+    let anzeigeText = level
+    document.querySelector('.dropbtn').innerText = "Difficulty: " + anzeigeText;
+
+    neustart(); 
+}
+
+// Spieler
 function macheZug(feldIndex) {
-    if (brett[feldIndex] !== '' || !spielAktiv) {
+    if (brett[feldIndex] !== '' || !spielAktiv || !spielerDran) {
         return; 
     }
 
     brett[feldIndex] = 'X';
+    history_list.push("X" + feldIndex);
+
     document.getElementById('feld-' + feldIndex).innerText = 'X';
     document.getElementById('feld-' + feldIndex).style.color = '#007bff';
 
@@ -33,7 +47,9 @@ function macheZug(feldIndex) {
     document.getElementById('status-text').innerText = "KI ist am Zug...";
     document.getElementById('status-text').style.color = '#ff8400';
     
-    setTimeout(kiZug, 500); 
+    spielerDran = false;
+    setTimeout(kiZug, 500);
+
 }
 
 // KI
@@ -41,15 +57,32 @@ function kiZug() {
     if (!spielAktiv) return;
 
     let leereFelder = [];
-    for (i = 0; i < brett.length; i++) {
-        if (brett[i] === '') {
-            leereFelder.push(i);
-        }
+    for (let i = 0; i < brett.length; i++) {
+        if (brett[i] === '') leereFelder.push(i);
     }
 
-    let zufallsIndex = Math.floor(Math.random() * leereFelder.length);
-    let kiWahl = leereFelder[zufallsIndex];
+    let kiWahl;
 
+    // Wählen des Algorithmus für die konkrete Schwierigkeit
+    if (difficultyNow === 'easy') {
+        let zufallsIndex = Math.floor(Math.random() * leereFelder.length);
+        kiWahl = leereFelder[zufallsIndex];
+
+    } 
+    else if (difficultyNow === 'medium') {
+        if (Math.random() > 0.7) {
+            kiWahl = minimax(brett, 'O').index;
+        } else {
+            let zufallsIndex = Math.floor(Math.random() * leereFelder.length);
+            kiWahl = leereFelder[zufallsIndex];
+        }
+
+    } 
+    else if (difficultyNow === 'hard') {
+        kiWahl = minimax(brett, 'O').index;
+    }
+
+    // Zug ausführen
     brett[kiWahl] = 'O';
     document.getElementById('feld-' + kiWahl).innerText = 'O';
     document.getElementById('feld-' + kiWahl).style.color = '#ff8400';
@@ -66,17 +99,79 @@ function kiZug() {
 
     document.getElementById('status-text').innerText = "Du bist dran (X)";
     document.getElementById('status-text').style.color = '#007bff';
+
+    spielerDran = true;
+    history_list.push("O" + kiWahl);
+}
+
+// MiniMax
+function minimax(neuesBrett, spieler) {
+    let leereFelder = [];
+    for (let i = 0; i < neuesBrett.length; i++) {
+        if (neuesBrett[i] === '') leereFelder.push(i);
+    }
+
+    // Simulation
+    if (prüfeGewinner('X', neuesBrett)) {
+        return { score: -10 };
+    } else if (prüfeGewinner('O', neuesBrett)) {
+        return { score: 10 };
+    } else if (leereFelder.length === 0) {
+        return { score: 0 };
+    }
+
+    let züge = [];
+
+    for (let i = 0; i < leereFelder.length; i++) {
+        let zug = {};
+        zug.index = leereFelder[i];
+        
+        neuesBrett[leereFelder[i]] = spieler;
+
+        if (spieler === 'O') {
+            let result = minimax(neuesBrett, 'X');
+            zug.score = result.score;
+        } else {
+            let result = minimax(neuesBrett, 'O');
+            zug.score = result.score;
+        }
+        // Undo-Simulation
+        neuesBrett[leereFelder[i]] = '';
+        züge.push(zug);
+    }
+
+    // Strebt nach bestem Score für die KI und schlechtestem Scroe für den Spieler
+    let besterZugIndex;
+    if (spieler === 'O') {
+        let bestScore = -10000;
+        for (let i = 0; i < züge.length; i++) {
+            if (züge[i].score > bestScore) {
+                bestScore = züge[i].score;
+                besterZugIndex = i;
+            }
+        }
+    } else {
+        let bestScore = 10000;
+        for (let i = 0; i < züge.length; i++) {
+            if (züge[i].score < bestScore) {
+                bestScore = züge[i].score;
+                besterZugIndex = i;
+            }
+        }
+    }
+
+    return züge[besterZugIndex];
 }
 
 // Prüfe GEwinner
-function prüfeGewinner(spieler) {
+function prüfeGewinner(spieler, testBrett = brett) {
     for (let i = 0; i < gewinnKombinationen.length; i++) {
         let kombi = gewinnKombinationen[i];
         let a = kombi[0];
         let b = kombi[1];
         let c = kombi[2];
 
-        if (brett[a] === spieler && brett[b] === spieler && brett[c] === spieler) {
+        if (testBrett[a] === spieler && testBrett[b] === spieler && testBrett[c] === spieler) {
             return true;
         }
     }
@@ -88,17 +183,23 @@ function beendeSpiel(nachricht, farbe) {
     spielAktiv = false;
     document.getElementById('status-text').innerText = nachricht;
     document.getElementById('status-text').style.color = farbe;
+    document.getElementById('history').value = history_list;
+    document.getElementById('history-form').submit();
 }
 
 // Neustart
 function neustart() {
     brett = ['', '', '', '', '', '', '', '', ''];
+    history_list = [];
     spielAktiv = true;
     
     for (let i = 0; i < 9; i++) {
         document.getElementById('feld-' + i).innerText = '';
     }
 
+    spielerDran = true;
+
     document.getElementById('status-text').innerText = "Du bist dran (X)";
     document.getElementById('status-text').style.color = '#007bff';
+    document.getElementById('history').value = history_list;
 }
