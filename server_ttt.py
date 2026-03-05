@@ -91,36 +91,70 @@ def main():
     if "user" not in session:
         return redirect(url_for("login"))
     
+    #bei beenden TTT wird Game gespeichert
+    if request.method == "POST":
+        player_id = session["player_id"]
+        game_id = session["game_id"]
+        game_history = request.form["history"]
+        cur.execute('''INSERT INTO Move (game_history, game_id, player_id) 
+                    VALUES (?, ?, ?)''', [game_history, game_id, player_id])
+        con.commit()
+        session.pop("game_id", None)
+
     #übergeben des Usernamen
     username = session["user"]
     return render_template("main.html", username = username)
 
 #redirected zu start und beendet die Session
-@app.route("/logout", )
+@app.route("/logout")
 def logout():
     session.pop("user", None)
     return redirect("/")
 
 #tictactoe Seite
-@app.route("/tictactoe")
+@app.route("/tictactoe", methods = ["GET", "POST"])
 def ttt():
     if "user" not in session:
         return redirect(url_for("login"))
     
-    if "player_id" not in session:
-        username = session["user"]
-        cur.execute("SELECT id FROM User WHERE Username = ?", (username,))
-        user_row = cur.fetchone()
-        if user_row:
-            user_id = user_row[0]
+    #bei neustart wird Game gespeichert
+    if request.method == "POST":
+        player_id = session["player_id"]
+        game_id = session["game_id"]
+        game_history = request.form["history"]
+        cur.execute('''INSERT INTO Move (game_history, game_id, player_id) 
+                    VALUES (?, ?, ?)''', [game_history, game_id, player_id])
+        con.commit()
+        session.pop("game_id", None)
+    
+    username = session["user"]
+    cur.execute("SELECT id FROM User WHERE Username = ?", (username,))
+    user_row = cur.fetchone()
+    user_id = user_row[0]
 
-            cur.execute("INSERT INTO Player (user_id, role) VALUES (?, ?)", (user_id, "X"))
-            player_id = cur.lastrowid
-            session["player_id"] = player_id
-            con.commit()
+    #prüfe ob player schon existiert
+    cur.execute("SELECT id FROM Player WHERE user_id = ?", [user_id,])
+    player_row = cur.fetchone()
+
+    #falls existiert wird kein neuer Player angelegt
+    if player_row:
+        player_id = player_row[0]
     else: 
-        return redirect(url_for("login"))
+        cur.execute("INSERT INTO Player (user_id, role) VALUES (?, ?)", (user_id, "X"))
+        player_id = cur.lastrowid
+        con.commit()
+    
+    session["player_id"] = player_id
 
+    #kreiert neues Game, speichert in Game Tabelle
+    cur.execute("""
+    INSERT INTO Games (playerID_X, created_at)
+    VALUES (?, DATE('now'))
+    """, (player_id,))
+
+    game_id = cur.lastrowid
+    session["game_id"] = game_id
+    con.commit()
     return render_template("tictactoe.html")
 
 if __name__ == "__main__":
