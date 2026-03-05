@@ -87,6 +87,7 @@ function kiZug() {
     document.getElementById('feld-' + kiWahl).innerText = 'O';
     document.getElementById('feld-' + kiWahl).style.color = '#ff8400';
 
+    // Anzeige nach Gewinnerprüfung
     if (prüfeGewinner('O')) {
         beendeSpiel("Verloren!", "#ff8400");
         return;
@@ -97,9 +98,11 @@ function kiZug() {
         return;
     }
 
+    // Anzeige für den Spielerzug laden
     document.getElementById('status-text').innerText = "Du bist dran (X)";
     document.getElementById('status-text').style.color = '#007bff';
 
+    // Spieler kann seinen Zug machen
     spielerDran = true;
     history_list.push("O" + kiWahl);
 }
@@ -140,7 +143,7 @@ function minimax(neuesBrett, spieler) {
         züge.push(zug);
     }
 
-    // Strebt nach bestem Score für die KI und schlechtestem Scroe für den Spieler
+    // Strebt nach bestem Score für die KI und schlechtestem Score für den Spieler
     let besterZugIndex;
     if (spieler === 'O') {
         let bestScore = -10000;
@@ -170,7 +173,8 @@ function prüfeGewinner(spieler, testBrett = brett) {
         let a = kombi[0];
         let b = kombi[1];
         let c = kombi[2];
-
+        
+        // Prüfe alle Kominationen und schaue ob gewonnen hat
         if (testBrett[a] === spieler && testBrett[b] === spieler && testBrett[c] === spieler) {
             return true;
         }
@@ -180,11 +184,27 @@ function prüfeGewinner(spieler, testBrett = brett) {
 
 // Spiel beenden
 function beendeSpiel(nachricht, farbe) {
+    // Deaktivieren
     spielAktiv = false;
+    
+    // Anzeige
     document.getElementById('status-text').innerText = nachricht;
     document.getElementById('status-text').style.color = farbe;
-    document.getElementById('history').value = history_list;
-    document.getElementById('history-form').submit();
+
+    // Liste erstellen
+    let historyDaten = history_list.join(','); 
+    let formElement = document.getElementById('history-form');
+    let Url = formElement.action || window.location.href;
+
+    // Formular erstellen und Liste reinschreiben
+    let formData = new FormData();
+    formData.append('history', historyDaten);
+
+    // Formular abschicken
+    fetch(Url, {
+        method: 'POST',
+        body: formData
+    })
 }
 
 // Neustart
@@ -193,13 +213,15 @@ function neustart() {
     history_list = [];
     spielAktiv = true;
     
+    // Brett leeren
     for (let i = 0; i < 9; i++) {
         document.getElementById('feld-' + i).innerText = '';
     }
 
+    // Spieler kann Zug machen
     spielerDran = true;
 
+    // Status Text anzeige
     document.getElementById('status-text').innerText = "Du bist dran (X)";
     document.getElementById('status-text').style.color = '#007bff';
-    document.getElementById('history').value = history_list;
 }
