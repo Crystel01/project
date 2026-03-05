@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for
+from flask_socketio import SocketIO, join_room, leave_room, emit
 from datetime import date
 import sqlite3
 import bcrypt               #zum verschlüsseln/ hashen der Passwörter
@@ -6,6 +7,8 @@ import os
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+
+socketio = SocketIO(app)
 
 #nötig, damit nicht auf den aktuellen Arbeistspeicher zugegriffeen werden muss
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))   #guckt wo die Py Datei liegt, definiert als absoluten Pfad und gibt den den Ornder an
@@ -96,8 +99,8 @@ def main():
         player_id = session["player_id"]
         game_id = session["game_id"]
         game_history = request.form["history"]
-        cur.execute('''INSERT INTO Move (game_history, game_id, player_id) 
-                    VALUES (?, ?, ?)''', [game_history, game_id, player_id])
+        cur.execute('''INSERT INTO Move (game_history, game_id, player_id, created_at) 
+                    VALUES (?, ?, ?, DATE('now'))''', [game_history, game_id, player_id])
         con.commit()
         session.pop("game_id", None)
 
@@ -122,9 +125,12 @@ def ttt():
         player_id = session["player_id"]
         game_id = session["game_id"]
         game_history = request.form["history"]
-        cur.execute('''INSERT INTO Move (game_history, game_id, player_id) 
-                    VALUES (?, ?, ?)''', [game_history, game_id, player_id])
+        cur.execute('''INSERT INTO Move (game_history, game_id, player_id, created_at) 
+                    VALUES (?, ?, ?, DATE('now'))''', [game_history, game_id, player_id])
         con.commit()
+        # winner_id = request.form
+        # cur.execute('''INSERT INTO Games (winner_id) VALUES (?)''', [winner_id,])
+        # con.commit
         session.pop("game_id", None)
     
     username = session["user"]
@@ -158,4 +164,4 @@ def ttt():
     return render_template("tictactoe.html")
 
 if __name__ == "__main__":
-    app.run(debug = True)
+    socketio.run(app, debug = True)
