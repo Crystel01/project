@@ -86,6 +86,12 @@ def login():
             return render_template("login.html", check = True)
     return render_template("login.html")
 
+#redirected zu start und beendet die Session
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect("/")
+
 @app.route("/main", methods = ['GET', 'POST'])
 def main(): 
     #falls User nicht eingeloggt existiert er nicht im Wörterbuch -> zurück zum Login
@@ -106,15 +112,9 @@ def main():
     username = session["user"]
     return render_template("main.html", username = username)
 
-#redirected zu start und beendet die Session
-@app.route("/logout")
-def logout():
-    session.pop("user", None)
-    return redirect("/")
-
-#tictactoe Seite
-@app.route("/tictactoe", methods = ["GET", "POST"])
-def ttt():
+#tictactoe Seite für Ki
+@app.route("/tictactoe/singleplayer", methods = ["GET", "POST"])
+def ttts():
     if "user" not in session:
         return redirect(url_for("login"))
     
@@ -161,7 +161,42 @@ def ttt():
     con.commit()
     return render_template("tictactoe.html")
 
-@app.route("/create_game")
+@app.route("/tictactoe/check_for_players")
+def player_check():
+
+    cur.execute('''
+    SELECT COUNT(*) FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL
+    ''')
+    count = cur.fetchone()
+    
+    username = session["user"]
+    cur.execute("SELECT id FROM User WHERE Username = ?", (username,))
+    user_row = cur.fetchone()
+    user_id = user_row[0]
+
+    #prüfe ob player schon existiert
+    cur.execute("SELECT id FROM Player WHERE user_id = ?", [user_id,])
+    player_row = cur.fetchone()
+
+    #falls existiert wird kein neuer Player angelegt
+    if player_row:
+        player_id = player_row[0]
+    else: 
+        cur.execute("INSERT INTO Player (user_id, role) VALUES (?, ?)", (user_id, "X"))
+        player_id = cur.lastrowid
+        con.commit()
+    
+    session["player_id"] = player_id
+    
+    if count[0] >= 1:
+        cur.execute("SELECT ID FROM Games WHERE playerID_X IS NOT NULL")
+        row = cur.fetchone()
+        game_id = row[0]
+        return redirect(url_for("join_game", game_id = game_id))
+    else: 
+        return redirect(url_for("create_game"))
+
+@app.route("/tictactoe/create_game")
 def create_game():
     player_id = session["player_id"]
 
@@ -172,12 +207,12 @@ def create_game():
 
     game_id = cur.lastrowid
     con.commit()
+    session["game_id"] = game_id
+    return redirect(url_for("waiting_room"))
 
-    return redirect(url_for("waiting_room", game_id=game_id))
-
-@app.route("/waiting_for_player")
-def waiting_room(game_id):
-
+@app.route("/tictactoe/waiting_for_player")
+def waiting_room():
+    game_id = session["game_id"]
     cur.execute("""
     SELECT playerID_O
     FROM Games
@@ -190,26 +225,10 @@ def waiting_room(game_id):
         return redirect(url_for("tictactoe"))
     
     return render_template("waiting.html")
-    
-@app.route("/check_for_players")
-def player_check():
-
-    cur.execute('''
-    SELECT COUNT(*) FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL
-    ''')
-    count = cur.fetchone()
-    
-    if count[0] >= 1:
-        cur.execute("SELECT game_id FROM Games WHERE playerID_X IS NOT NULL")
-        row = cur.fetchone()
-        game_id = row[0]
-        return redirect(url_for("join_game", game_id = game_id))
-    else: 
-        return redirect(url_for("create_game"))
-    
-@app.route("/join_game")
-def join_game(game_id):
-
+     
+@app.route("/tictactoe/join_game")
+def join_game():
+    game_id = session["game_id"]
     player_id = session["player_id"]
     cur.execute(" UPDATE Games SET playerID_O = ? WHERE ID = ?", [player_id, game_id])
     con.commit()
@@ -217,7 +236,12 @@ def join_game(game_id):
     session["game_id"] = game_id
     return redirect(url_for("tictactoe"))
 
-@app.route("/make_move", methods = ["POST"])
+# @app.route("/tictactoe/multiplayer", methods = ["GET", "POST"])
+# def tttm():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    
+@app.route("/tictactoe/make_move", methods = ["POST"])
 def make_move():
     game_id = session["game_id"]
     player_id = session["player_id"]
@@ -226,9 +250,9 @@ def make_move():
     cur.execute("INSERT INTO Move (game_id, player_id, game_history) VALUES (?, ?, ?)", [game_id, player_id, position])
     con.commit()
 
-    return
+    return render_template("tictactoe.html")
 
-@app.route("/get_moves")
+@app.route("/tictactoe/get_moves")
 def get_moves():
     game_id = session["game_id"]
     
@@ -239,7 +263,8 @@ def get_moves():
     """, (game_id,))
 
     moves = cur.fetchall()
-    return {"moves": moves}
+
+    return render_template("tictactoe.html", history = moves)
 
 if __name__ == "__main__":
     app.run(debug = True)
