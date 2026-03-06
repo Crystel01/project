@@ -1,35 +1,113 @@
 <!DOCTYPE html>
-<html lang="de-x-formal" dir="ltr" class="client-nojs">
+<html lang="de" dir="ltr" class="client-nojs">
 <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{url_for('static', filename='stylesheet.css')}}">
     <title>Login</title>
+    
+    <style>
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('https://www.travelmanagers.com.au/wp-content/uploads/2016/04/iStock_000068142299_Medium.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(8px); 
+            z-index: -1; 
+            transform: scale(1.05); 
+        }
+
+        body {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            padding-top: 80px; 
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .login-container {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: inline-block;
+            width: 320px;
+            box-sizing: border-box;
+        }
+
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0 20px 0;
+            box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        button {
+            padding: 15px 30px;
+            background-color: #e98f4a;
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            font-family: "Space Grotesk", sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #af652c;
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }     
+    </style>
 </head>
 <body>
-<h1>My Chat - Login</h1>
 
-{% if exists%}
-<br>
-<b style="color:red"> Diese E-Mail besitzt bereits ein Konto.</b>
-</br>
-{%endif%}
+    <h1>Login</h1>
 
-{% if check%}
-<br>
-<b style="color:red"> Das Passwort ist falsch.</b>
-</br>
-{%endif%}
-
-
-
-<form action="/login" method = 'POST'>
-    Bitte E-Mail eingeben:
     <br>
-    <input type="text" name="email">
-    </br>
-    Bitte Passwort eingeben:
-    <br>
-    <input type="password" name="password">
-    </br>
-    <button type="submit">Login</button>
-</form>
+
+    <div class="login-container">
+        {% if exists %}
+        <span style="color: red;">Diese E-Mail ist uns nicht bekannt.</span>
+        {% endif %}
+
+        {% if check %}
+        <span style="color: red;">Das Passwort ist falsch.</span>
+        {% endif %}
+
+        <form action="/login" method="POST">
+            <label for="email">E-MAIL</label>
+            <input type="email" id="email" name="email" required>
+            
+            <label for="password">PASSWORT</label>
+            <input type="password" id="password" name="password" required>
+            
+            <button type="submit">LOGIN</button>
+        </form>
+    </div>
 
 </body>
+</html>

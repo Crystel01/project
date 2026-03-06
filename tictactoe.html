@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static', filename='stylesheet.css')}}">
     <title>Tic Tac Toe</title>
     
     <style>
@@ -29,31 +30,6 @@
             padding-top: 50px;
             margin: 0;
         }
-
-        h1 {
-            color: #ffffff;
-            font-size: 3rem;
-            font-weight: 300;
-            text-transform: uppercase;
-            letter-spacing: 10px;
-            margin-bottom: 25px;
-            position: relative;
-            display: inline-block;
-        }
-
-        h1::after {
-            content: "";
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 380px;
-            max-width: 90%;
-            height: 3px;
-            background-color: #ff8400;
-            border-radius: 2px;
-        }
-
 
         #spiel-container {
             display: block;

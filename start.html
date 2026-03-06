@@ -3,8 +3,7 @@
 
 <head>
     <title>PixelPenguin</title>
-
-    <link rel="stylesheet" href="static/stylesheet.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='stylesheet.css')}}">
 
     <style>
         body::before {
@@ -14,11 +13,11 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-image: url(https://wallpapercave.com/wp/wp3748776.jpg);
+            background-image: url('https://www.travelmanagers.com.au/wp-content/uploads/2016/04/iStock_000068142299_Medium.jpg');
             background-repeat: no-repeat;
             background-size: cover;
             background-position: center;
-            filter: blur(6px);
+            filter: blur(8px);
             z-index: -1;
             transform: scale(1.05); 
         }
@@ -27,9 +26,8 @@
 
 <body>
 
-<h1>
-    Welcome to PixelPengiun
-</h1>
+<h1>Welcome to PixelPengiun</h1>
+
 <form action="/login">
     <button type="submit">Login</button>
 </form> 

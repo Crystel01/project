@@ -186,7 +186,7 @@ function prüfeGewinner(spieler, testBrett = brett) {
 function beendeSpiel(nachricht, farbe) {
     // Deaktivieren
     spielAktiv = false;
-    
+
     // Anzeige
     document.getElementById('status-text').innerText = nachricht;
     document.getElementById('status-text').style.color = farbe;
