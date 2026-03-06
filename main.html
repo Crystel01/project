@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{url_for('static', filename='stylesheet.css')}}">
-    <title>Klickbare Box mit Leiste</title>
+    <title>Main</title>
     
     <style>
         body::before {
@@ -43,18 +43,6 @@
             display: inline-block;
         }
 
-        h1::after {
-            content: "";
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 550px;
-            height: 3px;
-            background-color: #ff8400;
-            border-radius: 2px;
-        }
-
         .bg-layer {
             position: fixed;
             top: 0;
@@ -71,20 +59,16 @@
             transition: opacity 0.8s ease-in-out;
         }
 
-        .bg-blau { background-image: url('https://bilder.deutschlandfunk.de/FI/LE/_b/79/FILE_b7937e80e16b62fae5039dc84b56db0e/imago16566607h-jpg-102-1920x1080.jpg'); }
-        .bg-orange { background-image: url('https://camper.help/wp-content/uploads/Tic-Tac-Toe-Spielzuege-deutlich-komplexer-scaled.jpeg'); }
-        .bg-gruen { background-image: url('https://www.kindernetz.de/wissen/1653530177787%2Cwuesten-sahara-102~_v-16x9@2dL_-6c42aff4e68b43c7868c3240d3ebfa29867457da.jpg'); }
-        .bg-lila { background-image: url(''); }
+        .bg-singleplayer { background-image: url('https://bilder.deutschlandfunk.de/FI/LE/_b/79/FILE_b7937e80e16b62fae5039dc84b56db0e/imago16566607h-jpg-102-1920x1080.jpg'); }
+        .bg-multiplayer { background-image: url('https://camper.help/wp-content/uploads/Tic-Tac-Toe-Spielzuege-deutlich-komplexer-scaled.jpeg'); }
 
-        body:has(.box-blau:hover) .bg-blau { opacity: 1; }
-        body:has(.box-orange:hover) .bg-orange { opacity: 1; }
-        body:has(.box-gruen:hover) .bg-gruen { opacity: 1; }
-        body:has(.box-lila:hover) .bg-lila { opacity: 1; }
+        body:has(.box-singleplayer:hover) .bg-singleplayer { opacity: 1; }
+        body:has(.box-multiplayer:hover) .bg-multiplayer { opacity: 1; }
 
         .game-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 50px 30px; 
+            display: flex;
+            justify-content: center;
+            gap: 150px;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
@@ -116,17 +100,11 @@
             border-color: rgba(255, 255, 255, 0.9);
         }
 
-        .box-blau { background-color: #bde0f3; }
-        .box-blau:hover { background-color: #84b2ca; }
+        .box-singleplayer { background-color: #e98f4a; }
+        .box-singleplayer:hover { background-color: #af652c; }
 
-        .box-orange { background-color: #e98f4a; }
-        .box-orange:hover { background-color: #af652c; }
-
-        .box-gruen { background-color: #b9d674; }
-        .box-gruen:hover { background-color: #8faa50; }
-
-        .box-lila { background-color: #e15f51; }
-        .box-lila:hover { background-color: #b84336; }
+        .box-multiplayer { background-color: #e98f4a; }
+        .box-multiplayer:hover { background-color: #af652c; }
 
 
 
@@ -147,19 +125,15 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        .text-blau { color: #bde0f3; }
-        .text-orange { color: #e98f4a; }
-        .text-gruen { color: #b9d674; }
-        .text-lila { color: #e15f51; }
+        .text-singleplayer { color: #e98f4a; }
+        .text-multiplayer { color: #e98f4a; }
 
     </style>
 </head>
 
 <body>
-    <div class="bg-layer bg-blau"></div>
-    <div class="bg-layer bg-orange"></div>
-    <div class="bg-layer bg-gruen"></div>
-    <div class="bg-layer bg-lila"></div>
+    <div class="bg-layer bg-singleplayer"></div>
+    <div class="bg-layer bg-multiplayer"></div>
 
     <nav class="top-leiste">
         <div class="dropdown">
@@ -183,28 +157,18 @@
         </div>
     </nav>
 
-    <h1>Choose a game:</h1>
+    <h1>Choose a Gamemode:</h1>
 
     <div class="game-grid">
         
         <div class="game-card">
-            <a href="https://www.google.de" target="_blank" class="klick-box box-blau" title="Click here to play">Chess</a>
-            <div class="game-desc text-blau">Der absolute Klassiker für Strategen. Setze den gegnerischen König schachmatt.</div>
+            <a href="http://127.0.0.1:5000/tictactoe" target="_blank" class="klick-box box-singleplayer" title="Click here to play">Singleplayer</a>
+            <div class="game-desc text-singleplayer">Spiele gegen eine künstlichen Intelligenz</div>
         </div>
 
         <div class="game-card">
-        <a href="http://127.0.0.1:5000/tictactoe" class="klick-box box-orange" title="Click here to play">Tic Tac Toe</a>            
-        <div class="game-desc text-orange">Drei in einer Reihe gewinnen! Ein schnelles Spiel für zwischendurch.</div>
-        </div>
-
-        <div class="game-card">
-            <a href="https://www.google.de" target="_blank" class="klick-box box-gruen" title="Click here to play">Poker</a>
-            <div class="game-desc text-gruen">Zeige dein bestes Pokerface und gewinne mit den stärksten Karten.</div>
-        </div>
-
-        <div class="game-card">
-            <a href="https://www.google.de" target="_blank" class="klick-box box-lila" title="Click here to play">Game 4</a>
-            <div class="game-desc text-lila">Ein brandneues Abenteuer wartet auf dich. Entdecke spannende Level.</div>
+        <a href="http://127.0.0.1:5000/tictactoe" class="klick-box box-multiplayer" title="Click here to play">Multiplayer</a>            
+        <div class="game-desc text-multiplayer">Spiele gegen deine Freunde oder völlig fremde Spieler</div>
         </div>
 
     </div>
