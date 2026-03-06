@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, session, redirect, url_for
-from flask_socketio import SocketIO, join_room, leave_room, emit
 from datetime import date
 import sqlite3
 import bcrypt               #zum verschlüsseln/ hashen der Passwörter
@@ -8,7 +7,6 @@ import os
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-socketio = SocketIO(app)
 
 #nötig, damit nicht auf den aktuellen Arbeistspeicher zugegriffeen werden muss
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))   #guckt wo die Py Datei liegt, definiert als absoluten Pfad und gibt den den Ornder an
@@ -163,5 +161,85 @@ def ttt():
     con.commit()
     return render_template("tictactoe.html")
 
+@app.route("/create_game")
+def create_game():
+    player_id = session["player_id"]
+
+    cur.execute("""
+    INSERT INTO Games (playerID_X, current_turn, created_at)
+    VALUES (?, 'X', DATE('now'))
+    """, (player_id,))
+
+    game_id = cur.lastrowid
+    con.commit()
+
+    return redirect(url_for("waiting_room", game_id=game_id))
+
+@app.route("/waiting_for_player")
+def waiting_room(game_id):
+
+    cur.execute("""
+    SELECT playerID_O
+    FROM Games
+    WHERE id = ?
+    """, (game_id,))
+
+    row = cur.fetchone()
+
+    if row[0] is not None:
+        return redirect(url_for("tictactoe"))
+    
+    return render_template("waiting.html")
+    
+@app.route("/check_for_players")
+def player_check():
+
+    cur.execute('''
+    SELECT COUNT(*) FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL
+    ''')
+    count = cur.fetchone()
+    
+    if count[0] >= 1:
+        cur.execute("SELECT game_id FROM Games WHERE playerID_X IS NOT NULL")
+        row = cur.fetchone()
+        game_id = row[0]
+        return redirect(url_for("join_game", game_id = game_id))
+    else: 
+        return redirect(url_for("create_game"))
+    
+@app.route("/join_game")
+def join_game(game_id):
+
+    player_id = session["player_id"]
+    cur.execute(" UPDATE Games SET playerID_O = ? WHERE ID = ?", [player_id, game_id])
+    con.commit()
+    
+    session["game_id"] = game_id
+    return redirect(url_for("tictactoe"))
+
+@app.route("/make_move", methods = ["POST"])
+def make_move():
+    game_id = session["game_id"]
+    player_id = session["player_id"]
+    position = request.form["history"]
+
+    cur.execute("INSERT INTO Move (game_id, player_id, game_history) VALUES (?, ?, ?)", [game_id, player_id, position])
+    con.commit()
+
+    return
+
+@app.route("/get_moves")
+def get_moves():
+    game_id = session["game_id"]
+    
+    cur.execute("""
+    SELECT position, player_id
+    FROM Move
+    WHERE game_id = ?
+    """, (game_id,))
+
+    moves = cur.fetchall()
+    return {"moves": moves}
+
 if __name__ == "__main__":
-    socketio.run(app, debug = True)
+    app.run(debug = True)
