@@ -114,7 +114,7 @@ def main():
 
 #tictactoe Seite für Ki
 @app.route("/tictactoe/singleplayer", methods = ["GET", "POST"])
-def ttts():
+def tictactoe():
     if "user" not in session:
         return redirect(url_for("login"))
     
@@ -152,8 +152,8 @@ def ttts():
 
     #kreiert neues Game, speichert in Game Tabelle
     cur.execute("""
-    INSERT INTO Games (playerID_X, created_at)
-    VALUES (?, DATE('now'))
+    INSERT INTO Games (playerID_X, created_at, game_type)
+    VALUES (?, DATE('now'), 'ttt_singleplayer')
     """, (player_id,))
 
     game_id = cur.lastrowid
@@ -165,7 +165,7 @@ def ttts():
 def player_check():
 
     cur.execute('''
-    SELECT COUNT(*) FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL
+    SELECT COUNT(*) FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL AND game_type = "ttt_multiplayer"
     ''')
     count = cur.fetchone()
     
@@ -201,8 +201,8 @@ def create_game():
     player_id = session["player_id"]
 
     cur.execute("""
-    INSERT INTO Games (playerID_X, current_turn, created_at)
-    VALUES (?, 'X', DATE('now'))
+    INSERT INTO Games (playerID_X, game_type, created_at)
+    VALUES (?, 'ttt_multiplayer', DATE('now'))
     """, (player_id,))
 
     game_id = cur.lastrowid
@@ -211,7 +211,7 @@ def create_game():
     return redirect(url_for("waiting_room"))
 
 @app.route("/tictactoe/waiting_for_player")
-def waiting_room():
+def waiting_room():     #zurück Knopf macht Probleme, wenn Spiel gefunden noch keine Weiterleitung (HTML erstellen, ändern)
     game_id = session["game_id"]
     cur.execute("""
     SELECT playerID_O
@@ -228,12 +228,17 @@ def waiting_room():
      
 @app.route("/tictactoe/join_game")
 def join_game():
-    game_id = session["game_id"]
+    cur.execute('''
+    SELECT ID FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL AND game_type = "ttt_multiplayer"
+    ''')
+    row = cur.fetchone()
+    game_id = row[0]
+    session["game_id"] = game_id
     player_id = session["player_id"]
+
     cur.execute(" UPDATE Games SET playerID_O = ? WHERE ID = ?", [player_id, game_id])
     con.commit()
     
-    session["game_id"] = game_id
     return redirect(url_for("tictactoe"))
 
 # @app.route("/tictactoe/multiplayer", methods = ["GET", "POST"])
