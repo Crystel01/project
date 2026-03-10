@@ -161,9 +161,16 @@ def tictactoe():
     con.commit()
     return render_template("tictactoe.html")
 
+@app.route("/tictactoe/multiplayer", methods = ["GET", "POST"])
+def tictactoe_multiplayer():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    return redirect(url_for("main"))
+
 @app.route("/tictactoe/check_for_players")
 def player_check():
-
+    if "user" not in session:
+        return redirect(url_for("login"))
     cur.execute('''
     SELECT COUNT(*) FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL AND game_type = "ttt_multiplayer"
     ''')
@@ -189,17 +196,19 @@ def player_check():
     session["player_id"] = player_id
     
     if count[0] >= 1:
-        cur.execute("SELECT ID FROM Games WHERE playerID_X IS NOT NULL")
+        cur.execute("SELECT ID FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL AND game_type = 'ttt_multiplayer'")
         row = cur.fetchone()
         game_id = row[0]
+        session["game_id"] = game_id
         return redirect(url_for("join_game", game_id = game_id))
     else: 
         return redirect(url_for("create_game"))
 
 @app.route("/tictactoe/create_game")
 def create_game():
+    if "user" not in session:
+        return redirect(url_for("login"))
     player_id = session["player_id"]
-
     cur.execute("""
     INSERT INTO Games (playerID_X, game_type, created_at)
     VALUES (?, 'ttt_multiplayer', DATE('now'))
@@ -212,6 +221,8 @@ def create_game():
 
 @app.route("/tictactoe/waiting_for_player")
 def waiting_room():     #zurück Knopf macht Probleme, wenn Spiel gefunden noch keine Weiterleitung (HTML erstellen, ändern)
+    if "user" not in session:
+        return redirect(url_for("login"))
     game_id = session["game_id"]
     cur.execute("""
     SELECT playerID_O
@@ -222,24 +233,20 @@ def waiting_room():     #zurück Knopf macht Probleme, wenn Spiel gefunden noch 
     row = cur.fetchone()
 
     if row[0] is not None:
-        return redirect(url_for("tictactoe"))
+        return redirect(url_for("tictactoe_multiplayer"))
     
     return render_template("waiting.html")
      
 @app.route("/tictactoe/join_game")
 def join_game():
-    cur.execute('''
-    SELECT ID FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL AND game_type = "ttt_multiplayer"
-    ''')
-    row = cur.fetchone()
-    game_id = row[0]
-    session["game_id"] = game_id
+    if "user" not in session:
+        return redirect(url_for("login"))
     player_id = session["player_id"]
-
+    game_id = session["game_id"]
     cur.execute(" UPDATE Games SET playerID_O = ? WHERE ID = ?", [player_id, game_id])
     con.commit()
     
-    return redirect(url_for("tictactoe"))
+    return redirect(url_for("tictactoe_multiplayer"))
 
 # @app.route("/tictactoe/multiplayer", methods = ["GET", "POST"])
 # def tttm():
@@ -248,6 +255,8 @@ def join_game():
     
 @app.route("/tictactoe/make_move", methods = ["POST"])
 def make_move():
+    if "user" not in session:
+        return redirect(url_for("login"))
     game_id = session["game_id"]
     player_id = session["player_id"]
     position = request.form["history"]
@@ -259,6 +268,8 @@ def make_move():
 
 @app.route("/tictactoe/get_moves")
 def get_moves():
+    if "user" not in session:
+        return redirect(url_for("login"))
     game_id = session["game_id"]
     
     cur.execute("""
