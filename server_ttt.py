@@ -92,30 +92,12 @@ def logout():
     session.pop("user", None)
     return redirect("/")
 
-#Hauptseite mit Auswahl, falls vom Singleplayer aufgerufen wird, wird die Gesamthisotie gespeichert
 @app.route("/main", methods = ['GET', 'POST'])
 def main(): 
     #falls User nicht eingeloggt existiert er nicht im Wörterbuch -> zurück zum Login
     if "user" not in session:
         return redirect(url_for("login"))
     
-    username = session["user"]
-    
-    #falls noch game offen ist und von eigenem User erstellt wurde, so wird Spiel gelöscht
-    #P.S.: inner join ist wie normales Kreuprodukt (User, Player, Games), bloß effektiver und dahinter wird mit 'on' gefiltert
-    cur.execute(''' SELECT Games.ID FROM User INNER JOIN Player on User.ID = Player.user_id 
-                                        INNER JOIN Games on Player.ID = Games.playerID_X
-                where Games.active = 'waiting' 
-                AND User.Username = ?
-                AND Games.playerID_X IS NOT NULL
-                AND Games.playerID_O IS NULL
-    ''', [username,])
-    row = cur.fetchone()
-    if row is not None:
-        temp_game_id = row[0]
-        cur.execute(''' DELETE FROM Games WHERE ID = ? ''', [temp_game_id,])
-        con.commit()
-
     #bei beenden TTT wird Game gespeichert
     if request.method == "POST":
         player_id = session["player_id"]
@@ -126,6 +108,8 @@ def main():
         con.commit()
         session.pop("game_id", None)
 
+    #übergeben des Usernamen
+    username = session["user"]
     return render_template("main.html", username = username)
 
 #tictactoe Seite für Ki
@@ -177,21 +161,12 @@ def tictactoe():
     con.commit()
     return render_template("tictactoe.html")
 
-#tictactoe Anzeige für Multiplayer
-@app.route("/tictactoe/multiplayer", methods = ["GET", "POST"])
-def tictactoe_multiplayer():
-    if "user" not in session:
-        return redirect(url_for("login"))
-    return redirect(url_for("main"))
-
-#checkt, ob es schon Spiele gibt, die kreiert wurden und entscheidet ob kreiert werden muss oder join
 @app.route("/tictactoe/check_for_players")
 def player_check():
     if "user" not in session:
         return redirect(url_for("login"))
     cur.execute('''
-    SELECT COUNT(*) FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL 
-                AND game_type = "ttt_multiplayer" AND active = 'waiting'
+    SELECT COUNT(*) FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL AND game_type = "ttt_multiplayer"
     ''')
     count = cur.fetchone()
     
@@ -215,8 +190,7 @@ def player_check():
     session["player_id"] = player_id
     
     if count[0] >= 1:
-        cur.execute("SELECT ID FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL " \
-        "AND game_type = 'ttt_multiplayer' AND active = 'waiting'")
+        cur.execute("SELECT ID FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL AND game_type = 'ttt_multiplayer'")
         row = cur.fetchone()
         game_id = row[0]
         session["game_id"] = game_id
@@ -224,15 +198,14 @@ def player_check():
     else: 
         return redirect(url_for("create_game"))
 
-#erstellt neues Spiel und leitet an Wartezimmer weiter
 @app.route("/tictactoe/create_game")
 def create_game():
     if "user" not in session:
         return redirect(url_for("login"))
     player_id = session["player_id"]
     cur.execute("""
-    INSERT INTO Games (playerID_X, game_type, created_at, active)
-    VALUES (?, 'ttt_multiplayer', DATE('now'), 'waiting')
+    INSERT INTO Games (playerID_X, game_type, created_at)
+    VALUES (?, 'ttt_multiplayer', DATE('now'))
     """, (player_id,))
 
     game_id = cur.lastrowid
@@ -240,7 +213,6 @@ def create_game():
     session["game_id"] = game_id
     return redirect(url_for("waiting_room"))
 
-#Wartezimmer, html refresht alle 5s, ob Spieler gejoint ist
 @app.route("/tictactoe/waiting_for_player")
 def waiting_room():     #zurück Knopf macht Probleme, wenn Spiel gefunden noch keine Weiterleitung (HTML erstellen, ändern)
     if "user" not in session:
@@ -259,24 +231,49 @@ def waiting_room():     #zurück Knopf macht Probleme, wenn Spiel gefunden noch 
     
     return render_template("waiting.html")
      
-#Spiel existiert, -> joinen
 @app.route("/tictactoe/join_game")
 def join_game():
     if "user" not in session:
         return redirect(url_for("login"))
     player_id = session["player_id"]
     game_id = session["game_id"]
-    cur.execute(" UPDATE Games SET playerID_O = ? AND active = 'found' WHERE ID = ?", [player_id, game_id])
+    cur.execute(" UPDATE Games SET playerID_O = ? WHERE ID = ?", [player_id, game_id])
     con.commit()
     
     return redirect(url_for("tictactoe_multiplayer"))
+    
 
-# @app.route("/tictactoe/multiplayer", methods = ["GET", "POST"])
-# def tttm():
+
+@app.route("/tictactoe/multiplayer")
+def tictactoe_multiplayer():
+    # Login-Check
     if "user" not in session:
         return redirect(url_for("login"))
+    
+    # Prüfe ob Spiel existiert
+    player_id = session.get("player_id")
+    game_id = session.get("game_id")
+    
+    if not player_id or not game_id:
+        return redirect(url_for("main"))
 
-#Zustand, wenn Spieler an der Reihe ist
+    # Symbol für Spieler herrausfinden
+    cur.execute("SELECT playerID_X, playerID_O FROM Games WHERE ID = ?", (game_id,))
+    game_row = cur.fetchone()
+
+    # Erstmal X übernehmen
+    player_symbol = "X" 
+    
+    if game_row:
+        # X in O ändern, falls der SPieler O ist
+        if game_row[1] == player_id:
+            player_symbol = "O"
+    
+    # HTML rendern
+    return render_template("tictactoe-multiplayer.html", player_symbol=player_symbol)
+
+
+
 @app.route("/tictactoe/make_move", methods = ["POST"])
 def make_move():
     if "user" not in session:
@@ -288,25 +285,27 @@ def make_move():
     cur.execute("INSERT INTO Move (game_id, player_id, game_history) VALUES (?, ?, ?)", [game_id, player_id, position])
     con.commit()
 
-    return render_template("tictactoe.html")
+    return "OK"
 
-#warten auf den Zug des Gegenspielers, übergibt alle moves als 'history'
 @app.route("/tictactoe/get_moves")
 def get_moves():
     if "user" not in session:
-        return redirect(url_for("login"))
-    
+        return "ERROR"
     game_id = session["game_id"]
     
     cur.execute("""
-    SELECT position, player_id
+    SELECT game_history
     FROM Move
     WHERE game_id = ?
+    ORDER BY ID DESC LIMIT 1
     """, (game_id,))
 
-    moves = cur.fetchall()
+    row = cur.fetchone()
 
-    return render_template("tictactoe.html", history = moves)
+    if row is not None:
+        return row[0] 
+    else:
+        return ""
 
 if __name__ == "__main__":
     app.run(debug = True)

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static', filename='stylesheet.css')}}">
+    <title>Tic Tac Toe</title>
+    
+    <style>
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('https://www.maclife.de/media/maclife/styles/tec_frontend_teaserlist/public/images/editors/2016_24/image-79055--144149.jpg?itok=t4Y02Hs6'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(8px); 
+            z-index: -1; 
+            transform: scale(1.05); 
+        }
+
+        body {
+            font-family: "Space Grotesk", sans-serif;
+            color: white;
+            text-align: center;
+            padding-top: 50px;
+            margin: 0;
+        }
+
+        #spiel-container {
+            display: block;
+            width: fit-content;  
+            margin: 0 auto;
+            
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #status-text {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        #spielfeld {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+            margin: 0 auto;
+        }
+
+        #spielfeld button {
+            width: 100px;
+            height: 100px;
+            font-size: 40px;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #spielfeld button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        #neustart-knopf, #zurück-knopf {
+            display: inline-block;
+            margin-top: 30px;
+            margin-left: 10px;
+            margin-right: 10px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #neustart-knopf:hover {
+            border-color: #e98f4a;
+            color: #e98f4a;
+        }
+        
+        #zurück-knopf:hover {
+            border-color: #bde0f3;
+            color: #bde0f3;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Tic Tac Toe</h1>
+
+    <br>
+    <br>
+
+    <br>
+
+    <div id="spiel-container">
+        <div id="status-text">Du bist dran (X)</div>
+
+        <div id="spielfeld">
+            <button id="feld-0" onclick="macheZug(0)"></button>
+            <button id="feld-1" onclick="macheZug(1)"></button>
+            <button id="feld-2" onclick="macheZug(2)"></button>
+            <button id="feld-3" onclick="macheZug(3)"></button>
+            <button id="feld-4" onclick="macheZug(4)"></button>
+            <button id="feld-5" onclick="macheZug(5)"></button>
+            <button id="feld-6" onclick="macheZug(6)"></button>
+            <button id="feld-7" onclick="macheZug(7)"></button>
+            <button id="feld-8" onclick="macheZug(8)"></button>
+        </div>
+
+        <a id="zurück-knopf" href="/main">Zum Menü</a> 
+    </div>
+
+
+    <script>
+        // Symbol erkennen
+        let meinSymbol = "{{ player_symbol }}"; 
+        
+        // X darf anfangen
+        let istMeinZug = (meinSymbol === 'X'); 
+    </script>
+
+    <script src="/static/tictactoe-multiplayer.js"></script>
+
+    <form id="history-form" method="POST" action="#">
+        <input type="hidden" id="history" name="history" value="">
+    </form>
+
+</body>
+
+</html>
