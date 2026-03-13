@@ -114,7 +114,7 @@
     <br>
 
     <div id="spiel-container">
-        <div id="status-text">Du bist dran (X)</div>
+        <div id="status-text"></div>
 
         <div id="spielfeld">
             <button id="feld-0" onclick="macheZug(0)"></button>
@@ -134,10 +134,10 @@
 
     <script>
         // Symbol erkennen
-        let meinSymbol = "{{ player_symbol }}"; 
+        const GAME_DATA = {
+        symbol: "{{ player_symbol }}"
+        };
         
-        // X darf anfangen
-        let istMeinZug = (meinSymbol === 'X'); 
     </script>
 
     <script src="/static/tictactoe-multiplayer.js"></script>

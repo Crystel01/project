@@ -1,5 +1,15 @@
 let brett = ['', '', '', '', '', '', '', '', ''];
 let spielAktiv = true;
+let meinSymbol = GAME_DATA.symbol;
+let istMeinZug = (meinSymbol === "X")
+
+if (istMeinZug) {
+    document.getElementById('status-text').innerText = "Du bist dran (X)";
+    document.getElementById('status-text').style.color = '#007bff';
+} else {
+    document.getElementById('status-text').innerText = "Auf Gegner warten...";
+    document.getElementById('status-text').style.color = '#ffffff';
+}
 
 // Gewinnoptionen
 const gewinnKombinationen = [
@@ -104,7 +114,17 @@ function verarbeiteGegnerZug(feldIndex, symbol) {
     document.getElementById('status-text').style.color = (meinSymbol === 'X') ? '#007bff' : '#ff8400';
 }
 
+//Gewinner Symbol absenden
+function sendeGewinner(){
+    let formData = new FormData();
+    formData.append("winner_symbol", meinSymbol);
 
+    fetch('/tictactoe/game_won', {
+        method: 'POST',
+        body: formData
+    })
+    
+}
 
 
 
@@ -117,11 +137,16 @@ function beendeSpiel(nachricht, farbe) {
     document.getElementById('status-text').innerText = nachricht;
     document.getElementById('status-text').style.color = farbe;
 
+    if (nachricht === 'Gewonnen!'){
+        sendeGewinner()
+    }
+
+
     // Polling stoppen
     clearInterval(pollingIntervall);
 }
 
-// Prüfe GEwinner
+// Prüfe Gewinner
 function prüfeGewinner(spieler, testBrett = brett) {
     for (let i = 0; i < gewinnKombinationen.length; i++) {
         let kombi = gewinnKombinationen[i];

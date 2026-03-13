@@ -44,12 +44,11 @@ def registrierung():
             password_bytes = password.encode('utf-8')
             #generiert random Salt(Schlüssel) fürn hash
             hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt())  
-            cur_date = date.today()
-
+            
             cur.execute('''
                 INSERT INTO User (Username, Passwort, EMail, created_at)
-                VALUES (?, ?, ?, ?)
-                ''', [username, hash, email, cur_date])
+                VALUES (?, ?, ?, datetime('now'))
+                ''', [username, hash, email])
             con.commit()
 
             session["user"] = username
@@ -122,7 +121,7 @@ def main():
         game_id = session["game_id"]
         game_history = request.form["history"]
         cur.execute('''INSERT INTO Move (game_history, game_id, player_id, created_at) 
-                    VALUES (?, ?, ?, DATE('now'))''', [game_history, game_id, player_id])
+                    VALUES (?, ?, ?, datetime('now'))''', [game_history, game_id, player_id])
         con.commit()
         session.pop("game_id", None)
 
@@ -140,7 +139,7 @@ def tictactoe():
         game_id = session["game_id"]
         game_history = request.form["history"]
         cur.execute('''INSERT INTO Move (game_history, game_id, player_id, created_at) 
-                    VALUES (?, ?, ?, DATE('now'))''', [game_history, game_id, player_id])
+                    VALUES (?, ?, ?, datetime('now'))''', [game_history, game_id, player_id])
         con.commit()
         # winner_id = request.form
         # cur.execute('''INSERT INTO Games (winner_id) VALUES (?)''', [winner_id,])
@@ -153,14 +152,14 @@ def tictactoe():
     user_id = user_row[0]
 
     #prüfe ob player schon existiert
-    cur.execute("SELECT id FROM Player WHERE user_id = ?", [user_id,])
+    cur.execute("SELECT id FROM Player WHERE user_id = ? AND game_type = 'tictactoe_singleplayer'" , [user_id,])
     player_row = cur.fetchone()
 
     #falls existiert wird kein neuer Player angelegt
     if player_row:
         player_id = player_row[0]
     else: 
-        cur.execute("INSERT INTO Player (user_id, role) VALUES (?, ?)", (user_id, "X"))
+        cur.execute("INSERT INTO Player (user_id, game_type) VALUES (?, 'tictactoe_singleplayer')", (user_id,))
         player_id = cur.lastrowid
         con.commit()
     
@@ -169,7 +168,7 @@ def tictactoe():
     #kreiert neues Game, speichert in Game Tabelle
     cur.execute("""
     INSERT INTO Games (playerID_X, created_at, game_type)
-    VALUES (?, DATE('now'), 'ttt_singleplayer')
+    VALUES (?, datetime('now'), 'ttt_singleplayer')
     """, (player_id,))
 
     game_id = cur.lastrowid
@@ -177,10 +176,12 @@ def tictactoe():
     con.commit()
     return render_template("tictactoe.html")
 
+#wartet ein Spieler bereits in einem Raum?
 @app.route("/tictactoe/check_for_players")
 def player_check():
     if "user" not in session:
         return redirect(url_for("login"))
+    
     cur.execute('''
     SELECT COUNT(*) FROM Games WHERE playerID_X IS NOT NULL AND playerID_O IS NULL 
                 AND game_type = "ttt_multiplayer" AND active = 'waiting'
@@ -193,14 +194,14 @@ def player_check():
     user_id = user_row[0]
 
     #prüfe ob player schon existiert
-    cur.execute("SELECT id FROM Player WHERE user_id = ?", [user_id,])
+    cur.execute("SELECT id FROM Player WHERE user_id = ? and game_type = 'tictactoe_multiplayer'", [user_id,])
     player_row = cur.fetchone()
 
     #falls existiert wird kein neuer Player angelegt
     if player_row:
         player_id = player_row[0]
     else: 
-        cur.execute("INSERT INTO Player (user_id, role) VALUES (?, ?)", (user_id, "X"))
+        cur.execute("INSERT INTO Player (user_id, game_type) VALUES (?, 'tictactoe_multiplayer')", (user_id))
         player_id = cur.lastrowid
         con.commit()
     
@@ -224,7 +225,7 @@ def create_game():
     player_id = session["player_id"]
     cur.execute("""
     INSERT INTO Games (playerID_X, game_type, created_at, active)
-    VALUES (?, 'ttt_multiplayer', DATE('now'), 'waiting')
+    VALUES (?, 'ttt_multiplayer', datetime('now'), 'waiting')
     """, (player_id,))
 
     game_id = cur.lastrowid
@@ -258,26 +259,25 @@ def join_game():
         return redirect(url_for("login"))
     player_id = session["player_id"]
     game_id = session["game_id"]
-    cur.execute(" UPDATE Games SET playerID_O = ? AND active = 'found' WHERE ID = ?", [player_id, game_id])
+    cur.execute(" UPDATE Games SET playerID_O = ? , active = 'found' WHERE ID = ?", [player_id, game_id])
     con.commit()
     
     return redirect(url_for("tictactoe_multiplayer"))
-    
 
-
+#ruft multiplayer html  auf und übergibt Parameter
 @app.route("/tictactoe/multiplayer")
 def tictactoe_multiplayer():
     # Login-Check
     if "user" not in session:
         return redirect(url_for("login"))
     
-    #unnötig:
     # Prüfe ob Spiel existiert
-    player_id = session.get("player_id")
-    game_id = session.get("game_id")
-    
-    if not player_id or not game_id:
+    if "player_id" not in session or "game_id" not in session:
         return redirect(url_for("main"))
+    
+
+    game_id = session["game_id"]
+    player_id = session["player_id"]
 
     # Symbol für Spieler herrausfinden
     cur.execute("SELECT playerID_X, playerID_O FROM Games WHERE ID = ?", (game_id,))
@@ -294,6 +294,28 @@ def tictactoe_multiplayer():
     # HTML rendern
     return render_template("tictactoe-multiplayer.html", player_symbol=player_symbol)
 
+#speichert gewinner_id in Games
+@app.route('/tictactoe/game_won', methods = ['POST'])
+def game_won():
+    winner_symbol = request.form.get("winner_symbol")
+    game_id = session['game_id']
+
+    cur.execute('''SELECT playerID_X, playerID_O FROM Games WHERE ID = ?
+    ''', [game_id,])
+    row = cur.fetchone()
+    playerID_X = row[0]
+    playerID_O = row[1]
+
+    if winner_symbol == "X":
+        winner_id = playerID_X
+    else:
+        winner_id = playerID_O
+
+    cur.execute(''' UPDATE Games SET winner_id = ? WHERE ID = ?
+    ''', [winner_id, game_id])
+    con.commit()
+
+    return "Winner ID saved"
 
 #Zustand, wenn Spieler an der Reihe ist
 @app.route("/tictactoe/make_move", methods = ["POST"])
@@ -304,7 +326,7 @@ def make_move():
     player_id = session["player_id"]
     position = request.form["history"]
 
-    cur.execute("INSERT INTO Move (game_id, player_id, game_history) VALUES (?, ?, ?)", [game_id, player_id, position])
+    cur.execute("INSERT INTO Move (game_id, player_id, game_history, created_at) VALUES (?, ?, ?, datetime('now'))", [game_id, player_id, position])
     con.commit()
 
     return "OK"
@@ -313,7 +335,8 @@ def make_move():
 @app.route("/tictactoe/get_moves")
 def get_moves():
     if "user" not in session:
-        return "ERROR"
+        return redirect(url_for("login"))
+    
     game_id = session["game_id"]
     
     cur.execute("""
@@ -329,6 +352,22 @@ def get_moves():
         return row[0] 
     else:
         return ""
+
+#lädt die gesamte Spielehistorie des Players
+@app.route("/history", methods = ["GET", "POST"])
+def history():
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    cur.execute('''
+        SELECT ID, game_type from Player WHERE  user_id = ?
+        ''', [user_id,])
+    row = cur.fetchall()
+
+    if row is None:
+        render_template("history.html", )
+
 
 if __name__ == "__main__":
     app.run(debug = True)
