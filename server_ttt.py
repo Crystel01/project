@@ -353,21 +353,5 @@ def get_moves():
     else:
         return ""
 
-#lädt die gesamte Spielehistorie des Players
-@app.route("/history", methods = ["GET", "POST"])
-def history():
-    if "user" not in session:
-        return redirect(url_for("login"))
-
-    user_id = session["user_id"]
-    cur.execute('''
-        SELECT ID, game_type from Player WHERE  user_id = ?
-        ''', [user_id,])
-    row = cur.fetchall()
-
-    if row is None:
-        render_template("history.html", )
-
-
 if __name__ == "__main__":
     app.run(debug = True)
