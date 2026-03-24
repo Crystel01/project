@@ -1,40 +1,95 @@
 <!DOCTYPE html>
-<html lang="de-x-formal" dir="ltr" class="client-nojs">
-
+<html lang="de" dir="ltr" class="client-nojs">
 <head>
-    <title>PixelPenguin</title>
-    <link rel="stylesheet" href="{{url_for('static', filename='stylesheet.css')}}">
+<title>PixelPenguin</title>
+<link rel="stylesheet" href="{{url_for('static', filename='stylesheet.css')}}">
 
-    <style>
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-image: url('https://www.travelmanagers.com.au/wp-content/uploads/2016/04/iStock_000068142299_Medium.jpg');
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-position: center;
-            filter: blur(8px);
-            z-index: -1;
-            transform: scale(1.05); 
-        }
-    </style>
+<style>
+
+body {
+    font-family: Arial, sans-serif;
+    color: white;
+    text-align: center;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: 100vh;
+    margin: 0;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    background-image: url('https://www.travelmanagers.com.au/wp-content/uploads/2016/04/iStock_000068142299_Medium.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+
+    filter: blur(8px);
+    transform: scale(1.05);
+
+    z-index: -1;
+}
+
+.container {
+    background-color: rgba(0,0,0,0.6);
+    padding: 60px;
+    border-radius: 12px;
+}
+
+h1 {
+    font-size: 48px;
+    margin-bottom: 40px;
+}
+
+button {
+    width: 200px;
+    padding: 15px;
+    margin: 10px;
+
+    font-size: 18px;
+    font-weight: bold;
+
+    border: none;
+    border-radius: 8px;
+
+    background-color: rgba(255,255,255,0.2);
+    color: white;
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background-color: rgba(255,255,255,0.4);
+    transform: scale(1.05);
+}
+
+</style>
 </head>
 
 <body>
 
-<h1>Welcome to PixelPengiun</h1>
+    <div class="container">
 
-<form action="/login">
-    <button type="submit">Login</button>
-</form> 
+        <h1>Welcome to PixelPenguin</h1>
 
-<br>
-<form action="/registrierung">
-    <button type="submit">Registrer</button>
-</br>
+        <form action="/login">
+            <button type="submit">Login</button>
+        </form>
+
+        <form action="/registrierung">
+            <button type="submit">Register</button>
+        </form>
+
+    </div>
 
 </body>
+</html>
