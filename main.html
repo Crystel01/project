@@ -59,8 +59,8 @@
             transition: opacity 0.8s ease-in-out;
         }
 
-        .bg-singleplayer { background-image: url('https://bilder.deutschlandfunk.de/FI/LE/_b/79/FILE_b7937e80e16b62fae5039dc84b56db0e/imago16566607h-jpg-102-1920x1080.jpg'); }
-        .bg-multiplayer { background-image: url('https://camhttps://tse1.mm.bing.net/th/id/OIP.Vrxt2FlLB7JBY3y6jNa6MAHaE1?rs=1&pid=ImgDetMain&o=7&rm=3per.help/wp-content/uploads/Tic-Tac-Toe-Spielzuege-deutlich-komplexer-scaled.jpeg'); }
+        .bg-singleplayer { background-image: url('/static/TTT.png'); }
+        .bg-multiplayer { background-image: url('/static/TTT.png'); }
 
         body:has(.box-singleplayer:hover) .bg-singleplayer { opacity: 1; }
         body:has(.box-multiplayer:hover) .bg-multiplayer { opacity: 1; }
@@ -141,7 +141,9 @@
             </div>
         </div>
 
-        <div style="font-size: 20px; font-weight: bold; letter-spacing: 1px; display: flex; justify-content: center; ">Hello <span id="username">{{username}}</span>!</div>
+        <div class="center-text">
+        Hello <span id="username">{{username}}</span>!
+    </div>
     </nav>
 
     <h1>Choose a Gamemode:</h1>
