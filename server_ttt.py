@@ -141,9 +141,6 @@ def tictactoe():
         cur.execute('''INSERT INTO Move (game_history, game_id, player_id, created_at) 
                     VALUES (?, ?, ?, datetime('now'))''', [game_history, game_id, player_id])
         con.commit()
-        # winner_id = request.form
-        # cur.execute('''INSERT INTO Games (winner_id) VALUES (?)''', [winner_id,])
-        # con.commit
         session.pop("game_id", None)
     
     username = session["user"]
@@ -159,17 +156,19 @@ def tictactoe():
     if player_row:
         player_id = player_row[0]
     else: 
-        cur.execute("INSERT INTO Player (user_id, game_type) VALUES (?, 'tictactoe_singleplayer')", (user_id,))
+        game_mode = 'tictactoe_singleplayer'
+        cur.execute("INSERT INTO Player (user_id, game_type) VALUES (?, ?)", (user_id, game_mode))
         player_id = cur.lastrowid
         con.commit()
     
     session["player_id"] = player_id
 
     #kreiert neues Game, speichert in Game Tabelle
+    game_mode = 'ttt_singleplayer'
     cur.execute("""
     INSERT INTO Games (playerID_X, created_at, game_type)
-    VALUES (?, datetime('now'), 'ttt_singleplayer')
-    """, (player_id,))
+    VALUES (?, datetime('now'), ? )
+    """, (player_id, game_mode))
 
     game_id = cur.lastrowid
     session["game_id"] = game_id
@@ -201,7 +200,8 @@ def player_check():
     if player_row:
         player_id = player_row[0]
     else: 
-        cur.execute("INSERT INTO Player (user_id, game_type) VALUES (?, 'tictactoe_multiplayer')", (user_id))
+        game_mode = 'tictactoe_multiplayer'
+        cur.execute("INSERT INTO Player (user_id, game_type) VALUES (?, ?)", (user_id, game_mode))
         player_id = cur.lastrowid
         con.commit()
     
@@ -223,10 +223,11 @@ def create_game():
     if "user" not in session:
         return redirect(url_for("login"))
     player_id = session["player_id"]
+    game_mode = 'ttt_multiplayer'
     cur.execute("""
     INSERT INTO Games (playerID_X, game_type, created_at, active)
-    VALUES (?, 'ttt_multiplayer', datetime('now'), 'waiting')
-    """, (player_id,))
+    VALUES (?, ?, datetime('now'), 'waiting')
+    """, (player_id, game_mode))
 
     game_id = cur.lastrowid
     con.commit()
